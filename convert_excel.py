@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+from openpyxl import load_workbook
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -7,12 +8,22 @@ from reportlab.pdfgen import canvas
 file_path = "antibiogram.xlsx"
 sheet_name = "Antibiogram"
 
-# Read the named sheet
+# Read the named sheet with pandas
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 
-# Generate PDF
-# Generate PDF using reportlab
-pdf_file_path = "converted_output.pdf"
+# Load the workbook and sheet with openpyxl for formatting
+wb = load_workbook(file_path, data_only=True)
+ws = wb[sheet_name]
+
+# Extract cell styles
+styles = {}
+for row in ws.iter_rows():
+    for cell in row:
+        if cell.value is not None:
+            styles[(cell.row, cell.column)] = cell
+
+# Create a PDF file using reportlab
+pdf_file_path = "antibiogram.pdf"
 c = canvas.Canvas(pdf_file_path, pagesize=letter)
 width, height = letter
 
@@ -28,15 +39,32 @@ text.textLines(data_str)
 c.drawText(text)
 c.save()
 
-# Generate JPG
-fig, ax = plt.subplots(figsize=(df.shape[1], df.shape[0] // 2))
+# Generate JPG using matplotlib
+fig, ax = plt.subplots(figsize=(df.shape[1] * 1.5, len(df) // 2))
 ax.axis("tight")
 ax.axis("off")
-ax.table(
+
+table = ax.table(
     cellText=df.values, colLabels=df.columns, cellLoc="center", loc="center"
 )
 
-jpg_file_path = file_path.replace(".xlsx", ".jpg")
-plt.savefig(jpg_file_path, format="jpg")
+# Apply formatting
+for (i, j), cell in table.get_celld().items():
+    if (i, j) in styles:
+        xl_cell = styles[(i, j)]
+        if xl_cell.fill.start_color.index != "00000000":
+            color = xl_cell.fill.start_color.rgb
+            cell.set_facecolor("#" + color[2:])
+        if xl_cell.font.bold:
+            cell.set_text_props(weight="bold")
+        if xl_cell.font.italic:
+            cell.set_text_props(style="italic")
+        if xl_cell.font.color:
+            color = xl_cell.font.color.rgb
+            cell.set_text_props(color="#" + color[2:])
+
+# Save the JPG file
+jpg_file_path = "converted_output.jpg"
+plt.savefig(jpg_file_path, format="jpg", bbox_inches="tight")
 
 print(f"Generated {pdf_file_path} and {jpg_file_path}")
