@@ -1,0 +1,36 @@
+name: Convert Excel to PDF and JPG
+
+on:
+  push:
+    paths:
+      - '**/*.xlsx'
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository content
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas openpyxl matplotlib pdfkit
+
+    - name: Convert Excel to PDF and JPG
+      run: |
+        python convert_excel.py
+
+    - name: Upload converted files
+      uses: actions/upload-artifact@v3
+      with:
+        name: converted-files
+        path: |
+          *.pdf
+          *.jpg
