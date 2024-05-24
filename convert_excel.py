@@ -52,19 +52,22 @@ table = ax.table(
 for (i, j), cell in table.get_celld().items():
     if (i, j) in styles:
         xl_cell = styles[(i, j)]
-        if xl_cell.fill.start_color.index != "00000000":
-            color = xl_cell.fill.start_color.rgb
-            cell.set_facecolor("#" + color[2:])
+        # Set background color if not default
+        if xl_cell.fill.start_color.index != '00000000' and xl_cell.fill.start_color.rgb is not None:
+            color = xl_cell.fill.start_color.rgb[2:]  # Remove the 'FF' prefix
+            cell.set_facecolor('#' + color)
+        # Set font weight and style
         if xl_cell.font.bold:
-            cell.set_text_props(weight="bold")
+            cell.set_text_props(weight='bold')
         if xl_cell.font.italic:
-            cell.set_text_props(style="italic")
-        if xl_cell.font.color:
-            color = xl_cell.font.color.rgb
-            cell.set_text_props(color="#" + color[2:])
+            cell.set_text_props(style='italic')
+        # Set font color if specified
+        if xl_cell.font.color is not None and xl_cell.font.color.rgb is not None:
+            color = xl_cell.font.color.rgb[2:]  # Remove the 'FF' prefix
+            cell.set_text_props(color='#' + color)
 
-# Save the JPG file
-jpg_file_path = "converted_output.jpg"
-plt.savefig(jpg_file_path, format="jpg", bbox_inches="tight")
+# Save the JPG file with the same base name as the PDF file
+jpg_file_path = "antibiogram.jpg"
+plt.savefig(jpg_file_path, format="jpg", bbox_inches='tight')
 
 print(f"Generated {pdf_file_path} and {jpg_file_path}")
