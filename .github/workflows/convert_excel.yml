@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout repository content
       uses: actions/checkout@v2
+      with:
+        ref: ${{ github.head_ref }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -32,10 +34,14 @@ jobs:
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
 
+    - name: Pull latest changes
+      run: |
+        git pull origin ${{ github.head_ref }}
+
     - name: Commit changes
       run: |
         git add *.pdf *.jpg
-        git commit -m "Add converted PDF and JPG of the first worksheet"
+        git commit -m "Add converted PDF and JPG of the first worksheet" || echo "No changes to commit"
 
     - name: Push changes
       env:
