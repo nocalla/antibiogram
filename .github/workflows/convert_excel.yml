@@ -21,16 +21,33 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pandas openpyxl matplotlib pdfkit
+        pip install pandas openpyxl matplotlib reportlab
 
     - name: Convert Excel to PDF and JPG
       run: |
         python convert_excel.py
 
-    - name: Upload converted files
-      uses: actions/upload-artifact@v3
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+
+    - name: Commit changes
+      run: |
+        git checkout -b convert-output
+        git add *.pdf *.jpg
+        git commit -m "Add converted PDF and JPG of the first worksheet"
+
+    - name: Push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git push -u origin convert-output
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
       with:
-        name: converted-files
-        path: |
-          *.pdf
-          *.jpg
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: convert-output
+        title: "Update converted files"
+        body: "This PR updates the PDF and JPG files generated from the first worksheet of the Excel file."

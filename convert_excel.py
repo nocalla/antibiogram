@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import pdfkit
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 # Load the Excel file
 file_path = "antibiogram.xlsx"
@@ -10,9 +11,22 @@ sheet_name = "Antibiogram"
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 
 # Generate PDF
-html_content = df.to_html()
-pdf_file_path = file_path.replace(".xlsx", ".pdf")
-pdfkit.from_string(html_content, pdf_file_path)
+# Generate PDF using reportlab
+pdf_file_path = "converted_output.pdf"
+c = canvas.Canvas(pdf_file_path, pagesize=letter)
+width, height = letter
+
+# Create a string representation of the dataframe
+data_str = df.to_string(index=False)
+
+# Set font and write the data string to the PDF
+c.setFont("Helvetica", 10)
+c.drawString(30, height - 40, "Excel Sheet Data:")
+text = c.beginText(30, height - 60)
+text.setFont("Helvetica", 8)
+text.textLines(data_str)
+c.drawText(text)
+c.save()
 
 # Generate JPG
 fig, ax = plt.subplots(figsize=(df.shape[1], df.shape[0] // 2))
