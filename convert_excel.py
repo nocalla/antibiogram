@@ -25,6 +25,39 @@ def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     return df
 
 
+def get_colour(drug_class: str) -> tuple:
+    """
+    Get RGB colour based on the drug class.
+
+    :param drug_class: Drug class name
+    :type drug_class: str
+    :return: RGB colour tuple
+    :rtype: tuple
+    """
+    colours = {
+        "Penicillin": (224, 224, 224),
+        "Anti-staphylococcal penicillins": (224, 224, 224),
+        "Aminopenicillins": (224, 224, 224),
+        "Aminopenicillins with beta-lactamase inhibitors": (204, 229, 255),
+        "1st-gen cephalosporin": (169, 169, 169),
+        "2nd-gen cephalosporin": (169, 169, 169),
+        "3rd-gen cephalosporin": (169, 169, 169),
+        "4th-gen cephalosporin": (169, 169, 169),
+        "Carbapenems": (255, 235, 204),
+        "Monobactams": (255, 255, 153),
+        "Quinolones": (224, 255, 224),
+        "Aminoglycosides": (255, 204, 153),
+        "Macrolides": (153, 255, 255),
+        "Lincosamide": (255, 255, 204),
+        "Tetracyclines": (255, 204, 204),
+        "Glycopeptides": (204, 204, 255),
+        "Antimetabolite": (153, 255, 153),
+        "Nitroimidazoles": (255, 255, 153),
+    }
+
+    return colours.get(drug_class, (255, 255, 255))  # Default to white
+
+
 def generate_pdf(output_filename: str, df: pd.DataFrame) -> str:
     """
     Create a PDF from a dataframe using the FPDF2 library.
@@ -36,24 +69,31 @@ def generate_pdf(output_filename: str, df: pd.DataFrame) -> str:
     :return: Path to the PDF output file
     :rtype: str
     """
-    # set up PDF file
     pdf_file_path = f"{output_filename}.pdf"
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
     pdf.set_font("Helvetica", size=8)
 
-    # prepare dataframe data for table format
     df = df.map(str)
     cols = [list(df)]  # Get list of dataframe columns
     rows = df.values.tolist()  # Get list of dataframe rows
     table_data = cols + rows  # Combine columns and rows in one list
 
-    # create table
-    with pdf.table(
-        borders_layout="MINIMAL",
-    ) as table:
-        for data_row in table_data:
-            table.row(data_row)
+    cell_width = pdf.epw / len(df.columns)  # Calculate cell width
+    cell_height = 8  # Cell height
+
+    for i, row in enumerate(table_data):
+        if i == 0:
+            pdf.set_fill_color(200, 200, 200)  # Header fill color
+        else:
+            drug_class = row[0]  # Assuming the first column is Drug Class
+            color = get_colour(drug_class)
+            pdf.set_fill_color(*color)
+
+        for cell in row:
+            pdf.cell(cell_width, cell_height, cell, border=1, fill=True)
+        pdf.ln(cell_height)
+
     pdf.output(pdf_file_path)
 
     return pdf_file_path
