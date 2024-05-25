@@ -3,6 +3,28 @@ import subprocess
 import pandas as pd
 from fpdf import FPDF
 
+CLASS_COLOURS = {
+    "Penicillin": (224, 224, 224),
+    "Anti-staphylococcal penicillins": (224, 224, 224),
+    "Aminopenicillins": (224, 224, 224),
+    "Aminopenicillins with beta-lactamase inhibitors": (204, 229, 255),
+    "1st-gen cephalosporin": (169, 169, 169),
+    "2nd-gen cephalosporin": (169, 169, 169),
+    "3rd-gen cephalosporin": (169, 169, 169),
+    "4th-gen cephalosporin": (169, 169, 169),
+    "5th-gen cephalosporin": (169, 169, 169),
+    "Carbapenems": (255, 235, 204),
+    "Monobactams": (255, 255, 153),
+    "Quinolones": (224, 255, 224),
+    "Aminoglycosides": (255, 204, 153),
+    "Macrolides": (153, 255, 255),
+    "Lincosamide": (255, 255, 204),
+    "Tetracyclines": (255, 204, 204),
+    "Glycopeptides": (204, 204, 255),
+    "Antimetabolite": (153, 255, 153),
+    "Nitroimidazoles": (255, 255, 153),
+}
+
 
 def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     """
@@ -25,40 +47,9 @@ def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     return df
 
 
-def get_colour(drug_class: str) -> tuple:
-    """
-    Get RGB colour based on the drug class.
-
-    :param drug_class: Drug class name
-    :type drug_class: str
-    :return: RGB colour tuple
-    :rtype: tuple
-    """
-    colours = {
-        "Penicillin": (224, 224, 224),
-        "Anti-staphylococcal penicillins": (224, 224, 224),
-        "Aminopenicillins": (224, 224, 224),
-        "Aminopenicillins with beta-lactamase inhibitors": (204, 229, 255),
-        "1st-gen cephalosporin": (169, 169, 169),
-        "2nd-gen cephalosporin": (169, 169, 169),
-        "3rd-gen cephalosporin": (169, 169, 169),
-        "4th-gen cephalosporin": (169, 169, 169),
-        "Carbapenems": (255, 235, 204),
-        "Monobactams": (255, 255, 153),
-        "Quinolones": (224, 255, 224),
-        "Aminoglycosides": (255, 204, 153),
-        "Macrolides": (153, 255, 255),
-        "Lincosamide": (255, 255, 204),
-        "Tetracyclines": (255, 204, 204),
-        "Glycopeptides": (204, 204, 255),
-        "Antimetabolite": (153, 255, 153),
-        "Nitroimidazoles": (255, 255, 153),
-    }
-
-    return colours.get(drug_class, (255, 255, 255))  # Default to white
-
-
-def generate_pdf(output_filename: str, df: pd.DataFrame) -> str:
+def generate_pdf(
+    output_filename: str, df: pd.DataFrame, colours: dict[str, tuple]
+) -> str:
     """
     Create a PDF from a dataframe using the FPDF2 library.
 
@@ -66,6 +57,8 @@ def generate_pdf(output_filename: str, df: pd.DataFrame) -> str:
     :type output_filename: str
     :param df: Dataframe to convert to PDF table
     :type df: pd.DataFrame
+    :param colours: Dictionary of colours for each drug class
+    :type colours: dict
     :return: Path to the PDF output file
     :rtype: str
     """
@@ -87,8 +80,7 @@ def generate_pdf(output_filename: str, df: pd.DataFrame) -> str:
             pdf.set_fill_color(200, 200, 200)  # Header fill color
         else:
             drug_class = row[0]  # Assuming the first column is Drug Class
-            color = get_colour(drug_class)
-            pdf.set_fill_color(*color)
+            pdf.set_fill_color(*colours.get(drug_class, (255, 255, 255)))
 
         for cell in row:
             pdf.cell(cell_width, cell_height, cell, border=1, fill=True)
@@ -134,7 +126,8 @@ def main(file: str, sheet_name: str) -> None:
     """
     file_path = f"{file}.xlsx"
     df = read_dataframe(file_path, sheet_name)
-    pdf_file_path = generate_pdf(file, df)
+
+    pdf_file_path = generate_pdf(file, df, CLASS_COLOURS)
     jpg_file_path = generate_jpg(file, pdf_file_path)
     print(f"Generated {pdf_file_path}, {jpg_file_path}")
 
