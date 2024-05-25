@@ -36,20 +36,23 @@ def generate_pdf(output_filename: str, df: pd.DataFrame) -> str:
     :return: Path to the PDF output file
     :rtype: str
     """
-    # Create a PDF file using fpdf2
+    # set up PDF file
     pdf_file_path = f"{output_filename}.pdf"
-    df = df.map(str)
-    COLUMNS = [list(df)]  # Get list of dataframe columns
-    ROWS = df.values.tolist()  # Get list of dataframe rows
-    DATA = COLUMNS + ROWS  # Combine columns and rows in one list
-
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
     pdf.set_font("Helvetica", size=8)
+
+    # prepare dataframe data for table format
+    df = df.map(str)
+    cols = [list(df)]  # Get list of dataframe columns
+    rows = df.values.tolist()  # Get list of dataframe rows
+    table_data = cols + rows  # Combine columns and rows in one list
+
+    # create table
     with pdf.table(
         borders_layout="MINIMAL",
     ) as table:
-        for data_row in DATA:
+        for data_row in table_data:
             table.row(data_row)
     pdf.output(pdf_file_path)
 
@@ -90,11 +93,9 @@ def main(file: str, sheet_name: str) -> None:
     :type sheet_name: str
     """
     file_path = f"{file}.xlsx"
-
     df = read_dataframe(file_path, sheet_name)
     pdf_file_path = generate_pdf(file, df)
     jpg_file_path = generate_jpg(file, pdf_file_path)
-
     print(f"Generated {pdf_file_path}, {jpg_file_path}")
 
 
