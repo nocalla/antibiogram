@@ -1,88 +1,45 @@
+import subprocess
+
 import pandas as pd
-from matplotlib import pyplot as plt
-from openpyxl import load_workbook
-from reportlab.pdfgen import canvas
+from fpdf import FPDF
 
 
 def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     # Read the named sheet with pandas
     df = pd.read_excel(file_path, sheet_name=sheet_name)
-    df.fillna("", inplace=True)
+    df.fillna(0, inplace=True)
+    df["Drug Name "] = df["Drug Name"]
+    cols = ["Drug Class", "Drug Name"]
+    df = df[cols + [c for c in df.columns if c not in cols]]
+    print(df.head())  # debug
     return df
 
 
 def generate_pdf(file: str, df: pd.DataFrame) -> str:
-    # Create a PDF file using reportlab
+    # Create a PDF file using fpdf2
     pdf_file_path = f"{file}.pdf"
-    c = canvas.Canvas(pdf_file_path, pagesize=(841.89, 595.27))
-    width, height = (841.89, 595.27)
+    df = df.map(str)
+    COLUMNS = [list(df)]  # Get list of dataframe columns
+    ROWS = df.values.tolist()  # Get list of dataframe rows
+    DATA = COLUMNS + ROWS  # Combine columns and rows in one list
 
-    # Create a string representation of the dataframe
-    data_str = df.to_string(index=False, max_colwidth=20)
+    pdf = FPDF(orientation="landscape")
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=8)
+    with pdf.table(
+        borders_layout="MINIMAL",
+    ) as table:
+        for data_row in DATA:
+            table.row(data_row)
+    pdf.output(pdf_file_path)
 
-    # Set font and write the data string to the PDF
-    c.setFont("Helvetica", 10)
-    # c.drawString(30, height - 40, "Excel Sheet Data:")
-    text = c.beginText(30, int(height) - 60)
-    text.setFont("Helvetica", 8)
-    text.textLines(data_str)
-    c.drawText(text)
-    c.save()
     return pdf_file_path
 
 
-def generate_jpg(file: str, df: pd.DataFrame, file_path: str) -> str:
-    # Load the workbook and sheet with openpyxl for formatting
-    wb = load_workbook(file_path, data_only=True)
-    ws = wb[sheet_name]
-    # Extract cell styles
-    styles = {}
-    for row in ws.iter_rows():  # type: ignore
-        for cell in row:
-            if cell.value is not None:
-                styles[(cell.row, cell.column)] = cell
-
-    # Generate JPG using matplotlib
-    fig, ax = plt.subplots(figsize=(df.shape[1] * 1.5, len(df) // 2))
-    ax.axis("tight")
-    ax.axis("off")
-
-    table = ax.table(
-        cellText=df.values,
-        colLabels=df.columns,
-        cellLoc="center",
-        loc="center",
-    )
-
-    # Apply formatting
-    for (i, j), cell in table.get_celld().items():
-        if (i, j) in styles:
-            xl_cell = styles[(i, j)]
-            # Set background color if not default
-            if (
-                xl_cell.fill.start_color.index != "00000000"
-                and xl_cell.fill.start_color.rgb is not None
-            ):
-                color = xl_cell.fill.start_color.rgb[
-                    2:
-                ]  # Remove the 'FF' prefix
-                cell.set_facecolor("#" + color)
-            # Set font weight and style
-            if xl_cell.font.bold:
-                cell.set_text_props(weight="bold")
-            if xl_cell.font.italic:
-                cell.set_text_props(style="italic")
-            # Set font color if specified
-            if (
-                xl_cell.font.color is not None
-                and xl_cell.font.color.rgb is not None
-            ):
-                color = xl_cell.font.color.rgb[2:]  # Remove the 'FF' prefix
-                cell.set_text_props(color="#" + color)
-
-    # Save the JPG file with the same base name as the PDF file
+def generate_jpg(file: str, pdf_file_path: str) -> str:
     jpg_file_path = f"{file}.jpg"
-    plt.savefig(jpg_file_path, format="jpg", bbox_inches="tight")
+    command = ["pdftoppm", "-jpeg", "-singlefile", pdf_file_path, file]
+    subprocess.run(command, check=True)
     return jpg_file_path
 
 
@@ -91,13 +48,13 @@ def main(file: str, sheet_name: str) -> None:
 
     df = read_dataframe(file_path, sheet_name)
     pdf_file_path = generate_pdf(file, df)
-    jpg_file_path = generate_jpg(file, df, file_path)
+    jpg_file_path = generate_jpg(file, pdf_file_path)
 
-    print(f"Generated {pdf_file_path} and {jpg_file_path}")
+    print(f"Generated {pdf_file_path}, {jpg_file_path}")
 
 
 if __name__ == "__main__":
     # Load the Excel file
     file = "antibiogram"
-    sheet_name = "Antibiogram"
+    sheet_name = "Drug Information"
     main(file, sheet_name)
