@@ -133,7 +133,7 @@ def generate_pdf(
 
     cell_width = pdf.epw / len(df.columns)  # Calculate cell width
     cell_height = 8  # Cell height
-
+    table_text = list()
     for i, row in enumerate(table_data):
         drug_class = row[0]  # Assuming the first column is Drug Class
         row_colour = colours.get(drug_class, (255, 255, 255))
@@ -149,9 +149,12 @@ def generate_pdf(
                 colour_fill = True
             if (i >= 2) and (j >= 2):
                 cell = ""
+            if cell in table_text:
+                cell = ""
             pdf.cell(
                 cell_width, cell_height, text=cell, border=1, fill=colour_fill
             )
+            table_text += [cell]
         pdf.ln(cell_height)
 
     pdf.output(pdf_file_path)
