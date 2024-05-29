@@ -122,10 +122,7 @@ def generate_pdf(
 
     # map colours for header subclasses
     for col in headers:
-        try:
-            colours[str(col[1])] = colours[str(col[0])]
-        except KeyError:
-            pass
+        colours[str(col[1])] = colours.get(col[0], (255, 255, 255))
 
     row_index = df.index.tolist()
     rows = df.values.tolist()  # Get list of dataframe rows
@@ -138,19 +135,23 @@ def generate_pdf(
     cell_height = 8  # Cell height
 
     for i, row in enumerate(table_data):
-        if i < 2:
-            pdf.set_fill_color(200, 200, 200)  # Header fill color
-        else:
-            drug_class = row[0]  # Assuming the first column is Drug Class
-            pdf.set_fill_color(*colours.get(drug_class, (255, 255, 255)))
+        drug_class = row[0]  # Assuming the first column is Drug Class
+        row_colour = colours.get(drug_class, (255, 255, 255))
+        pdf.set_fill_color(*row_colour)
 
-        for cell in row:
+        for j, cell in enumerate(row):
             if i < 2:
                 bacteria_class = cell
-                pdf.set_fill_color(
-                    *colours.get(bacteria_class, (255, 255, 255))
-                )
-            pdf.cell(cell_width, cell_height, text=cell, border=1, fill=True)
+                pdf.set_fill_color(*colours.get(bacteria_class, row_colour))
+            if cell == "nan":
+                colour_fill = False
+            else:
+                colour_fill = True
+            if (i >= 2) and (j >= 2):
+                cell = ""
+            pdf.cell(
+                cell_width, cell_height, text=cell, border=1, fill=colour_fill
+            )
         pdf.ln(cell_height)
 
     pdf.output(pdf_file_path)
