@@ -112,11 +112,20 @@ def generate_pdf(
     pdf.set_font("Helvetica", size=6)
 
     df = df.map(str)
-    headers = [("Drug Class", ""), ("Drug Name", "")] + list(
-        df
-    )  # Get list of dataframe column headers
+    # Get list of dataframe column headers
+    headers = [
+        ("Drug Class", "Drug Class"),
+        ("Drug Name", "Drug Name"),
+    ] + list(df)
     header_0 = [[h[0] for h in headers]]  # type: ignore
     header_1 = [[h[1] for h in headers]]  # type: ignore
+
+    # map colours for header subclasses
+    for col in headers:
+        try:
+            colours[str(col[1])] = colours[str(col[0])]
+        except KeyError:
+            pass
 
     row_index = df.index.tolist()
     rows = df.values.tolist()  # Get list of dataframe rows
@@ -172,7 +181,7 @@ def generate_jpg(output_filename: str, pdf_file_path: str) -> str:
     try:
         subprocess.run(command, stderr=subprocess.DEVNULL, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"generate_jpg function error: {e}")
+        print(f"\ngenerate_jpg function error: {e}")
     return jpg_file_path
 
 
@@ -193,7 +202,7 @@ def main(file: str) -> None:
 
     pdf_file_path = generate_pdf(file, df, COLOURS)
     jpg_file_path = generate_jpg(file, pdf_file_path)
-    print(f"Generated {pdf_file_path}, {jpg_file_path}")
+    print(f"\nGenerated {pdf_file_path}, {jpg_file_path}")
 
 
 if __name__ == "__main__":
