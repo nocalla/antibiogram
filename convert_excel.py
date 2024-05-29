@@ -3,7 +3,7 @@ import subprocess
 import pandas as pd
 from fpdf import FPDF
 
-CLASS_COLOURS = {
+COLOURS = {
     "Penicillin": (224, 224, 224),
     "Anti-staphylococcal penicillins": (224, 224, 224),
     "Aminopenicillins": (224, 224, 224),
@@ -23,6 +23,11 @@ CLASS_COLOURS = {
     "Glycopeptides": (204, 204, 255),
     "Antimetabolite": (153, 255, 153),
     "Nitroimidazoles": (255, 255, 153),
+    "Gram positive cocci": (68, 114, 196),
+    "Gram negative bacilli": (192, 0, 0),
+    "Gram negative cocci": (144, 86, 145),
+    "Anaerobes": (128, 96, 0),
+    "Atypicals": (128, 128, 128),
 }
 
 
@@ -80,7 +85,7 @@ def map_drugs_bugs(
         index=["Drug Class", "Drug Name"],
         columns=["Group", "Name"],
         values="Value",
-        # sort=False, # type: ignore
+        sort=False,  # type: ignore
     )
 
     return combined_df
@@ -107,7 +112,7 @@ def generate_pdf(
     pdf.set_font("Helvetica", size=6)
 
     df = df.map(str)
-    headers = [("", ""), ("", "")] + list(
+    headers = [("Drug Class", ""), ("Drug Name", "")] + list(
         df
     )  # Get list of dataframe column headers
     header_0 = [[h[0] for h in headers]]  # type: ignore
@@ -131,6 +136,11 @@ def generate_pdf(
             pdf.set_fill_color(*colours.get(drug_class, (255, 255, 255)))
 
         for cell in row:
+            if i < 2:
+                bacteria_class = cell
+                pdf.set_fill_color(
+                    *colours.get(bacteria_class, (255, 255, 255))
+                )
             pdf.cell(cell_width, cell_height, text=cell, border=1, fill=True)
         pdf.ln(cell_height)
 
@@ -181,7 +191,7 @@ def main(file: str) -> None:
     df = map_drugs_bugs(drug_df, bug_df)
     print(df.head())  # debug
 
-    pdf_file_path = generate_pdf(file, df, CLASS_COLOURS)
+    pdf_file_path = generate_pdf(file, df, COLOURS)
     jpg_file_path = generate_jpg(file, pdf_file_path)
     print(f"Generated {pdf_file_path}, {jpg_file_path}")
 
