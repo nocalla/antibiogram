@@ -39,12 +39,31 @@ def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     """
     # Read the named sheet with pandas
     df = pd.read_excel(file_path, sheet_name=sheet_name)
-    df.fillna(0, inplace=True)
-    df["Drug Name "] = df["Drug Name"]
-    cols = ["Drug Class", "Drug Name"]
-    df = df[cols + [c for c in df.columns if c not in cols]]
-    print(df.head())  # debug
+    # df.fillna(0, inplace=True)
+    # df["Drug Name "] = df["Drug Name"]
+    # cols = ["Drug Class", "Drug Name"]
+    # df = df[cols + [c for c in df.columns if c not in cols]]
     return df
+
+
+def map_drugs_bugs(
+    drug_df: pd.DataFrame, bug_df: pd.DataFrame
+) -> pd.DataFrame:
+    # Set the index for bug_df
+    bug_df.set_index(["Group", "Name"], inplace=True)
+
+    # Stack the bug_df to reshape it
+    stacked_bug_df = bug_df.stack().reset_index()
+    stacked_bug_df.columns = ["Group", "Name", "Drug Name", "Value"]
+    # merge the drug_df in to get drug classes
+    combined_df = pd.merge(drug_df, stacked_bug_df, on="Drug Name")
+    # Pivot the stacked_bug_df so that Drug Name becomes the index
+    combined_df = combined_df.pivot_table(
+        index=["Drug Class", "Drug Name"],
+        columns=["Group", "Name"],
+        values="Value",
+    )
+    return combined_df
 
 
 def generate_pdf(
@@ -115,7 +134,7 @@ def generate_jpg(output_filename: str, pdf_file_path: str) -> str:
     return jpg_file_path
 
 
-def main(file: str, sheet_name: str) -> None:
+def main(file: str) -> None:
     """
     Generate a PDF and JPG version of the data in an Excel worksheet.
 
@@ -125,7 +144,10 @@ def main(file: str, sheet_name: str) -> None:
     :type sheet_name: str
     """
     file_path = f"{file}.xlsx"
-    df = read_dataframe(file_path, sheet_name)
+    drug_df = read_dataframe(file_path, "Drug Information")
+    bug_df = read_dataframe(file_path, "Bacteria Information")
+    df = map_drugs_bugs(drug_df, bug_df)
+    print(df.head())  # debug
 
     pdf_file_path = generate_pdf(file, df, CLASS_COLOURS)
     jpg_file_path = generate_jpg(file, pdf_file_path)
@@ -134,5 +156,4 @@ def main(file: str, sheet_name: str) -> None:
 
 if __name__ == "__main__":
     file = "antibiogram"
-    sheet_name = "Drug Information"
-    main(file, sheet_name)
+    main(file)
