@@ -39,30 +39,50 @@ def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     """
     # Read the named sheet with pandas
     df = pd.read_excel(file_path, sheet_name=sheet_name)
-    # df.fillna(0, inplace=True)
-    # df["Drug Name "] = df["Drug Name"]
-    # cols = ["Drug Class", "Drug Name"]
-    # df = df[cols + [c for c in df.columns if c not in cols]]
     return df
 
 
 def map_drugs_bugs(
     drug_df: pd.DataFrame, bug_df: pd.DataFrame
 ) -> pd.DataFrame:
+    """
+    Combine drug and bacteria information into a multi-level column DataFrame.
+
+    This function takes two DataFrames: one containing drug information (with columns
+    "Drug Class" and "Drug Name") and the other containing bacteria information
+    (with columns "Group", "Name", and one column for each drug name). It merges these
+    DataFrames to create a combined DataFrame with multi-level columns where the first
+    two columns are the drug class and drug name, and subsequent columns represent
+    bacteria information for each drug.
+
+    :param drug_df : A DataFrame with columns "Drug Class" and "Drug Name".
+    :type drug_df: pd.DataFrame
+    :param bug_df: A DataFrame with columns "Group", "Name", and one column
+                           for each drug name containing corresponding values.
+    :type bug_df: pd.DataFrame
+
+    :return: A combined DataFrame with multi-level columns representing the
+                  merged drug and bacteria information.
+    rtype: pd.DataFrame
+    """
     # Set the index for bug_df
     bug_df.set_index(["Group", "Name"], inplace=True)
 
     # Stack the bug_df to reshape it
     stacked_bug_df = bug_df.stack().reset_index()
     stacked_bug_df.columns = ["Group", "Name", "Drug Name", "Value"]
-    # merge the drug_df in to get drug classes
+
+    # Merge the drug_df in to get drug classes
     combined_df = pd.merge(drug_df, stacked_bug_df, on="Drug Name")
-    # Pivot the stacked_bug_df so that Drug Name becomes the index
+
+    # Pivot the combined_df so that Drug Name becomes the index and maintain order
     combined_df = combined_df.pivot_table(
         index=["Drug Class", "Drug Name"],
         columns=["Group", "Name"],
         values="Value",
+        # sort=False, # type: ignore
     )
+
     return combined_df
 
 
@@ -84,25 +104,33 @@ def generate_pdf(
     pdf_file_path = f"{output_filename}.pdf"
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
-    pdf.set_font("Helvetica", size=8)
+    pdf.set_font("Helvetica", size=6)
 
     df = df.map(str)
-    cols = [list(df)]  # Get list of dataframe columns
+    headers = [("", ""),("","")] + list(df)  # Get list of dataframe column headers
+    print(headers)
+    header_0 = [[h[0] for h in headers]]  # type: ignore
+    header_1 = [[h[1] for h in headers]]  # type: ignore
+
+    row_index = df.index.tolist()
     rows = df.values.tolist()  # Get list of dataframe rows
-    table_data = cols + rows  # Combine columns and rows in one list
+    rows = [[index[0], index[1], *row] for index, row in zip(row_index, rows)]
+    table_data = (
+        header_0 + header_1 + rows
+    )  # Combine headers and rows in one list
 
     cell_width = pdf.epw / len(df.columns)  # Calculate cell width
     cell_height = 8  # Cell height
 
     for i, row in enumerate(table_data):
-        if i == 0:
+        if i < 2:
             pdf.set_fill_color(200, 200, 200)  # Header fill color
         else:
             drug_class = row[0]  # Assuming the first column is Drug Class
             pdf.set_fill_color(*colours.get(drug_class, (255, 255, 255)))
 
         for cell in row:
-            pdf.cell(cell_width, cell_height, cell, border=1, fill=True)
+            pdf.cell(cell_width, cell_height, text=cell, border=1, fill=True)
         pdf.ln(cell_height)
 
     pdf.output(pdf_file_path)
