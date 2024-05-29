@@ -42,7 +42,7 @@ jobs:
       - name: Commit changes
         run: |
           git add antibiogram.pdf antibiogram.jpg
-          git commit -m "Add converted PDF and JPG of the first worksheet" || echo "No changes to commit"
+          git commit -m "Add converted PDF and JPG of antibiogram" || echo "No changes to commit"
 
       - name: Push changes
         env:

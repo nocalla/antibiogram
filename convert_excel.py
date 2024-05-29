@@ -107,8 +107,9 @@ def generate_pdf(
     pdf.set_font("Helvetica", size=6)
 
     df = df.map(str)
-    headers = [("", ""),("","")] + list(df)  # Get list of dataframe column headers
-    print(headers)
+    headers = [("", ""), ("", "")] + list(
+        df
+    )  # Get list of dataframe column headers
     header_0 = [[h[0] for h in headers]]  # type: ignore
     header_1 = [[h[1] for h in headers]]  # type: ignore
 
@@ -158,7 +159,10 @@ def generate_jpg(output_filename: str, pdf_file_path: str) -> str:
         pdf_file_path,
         output_filename,
     ]
-    subprocess.run(command, check=True)
+    try:
+        subprocess.run(command, stderr=subprocess.DEVNULL, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"generate_jpg function error: {e}")
     return jpg_file_path
 
 
