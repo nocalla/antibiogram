@@ -70,6 +70,8 @@ def map_drugs_bugs(
                   merged drug and bacteria information.
     rtype: pd.DataFrame
     """
+    bug_names = bug_df["Name"].to_list()
+    print(bug_names)
     # Set the index for bug_df
     bug_df.set_index(["Group", "Name"], inplace=True)
 
@@ -78,7 +80,11 @@ def map_drugs_bugs(
     stacked_bug_df.columns = ["Group", "Name", "Drug Name", "Value"]
 
     # Merge the drug_df in to get drug classes
-    combined_df = pd.merge(drug_df, stacked_bug_df, on="Drug Name")
+    # TODO fix the sorting issue introduced by this merge?
+    # It does sort the drugs in a logical way though so maybe it's okay.
+    combined_df = pd.merge(stacked_bug_df, drug_df, on="Drug Name")
+
+    print(combined_df["Name"].to_list())
 
     # Pivot the combined_df so that Drug Name becomes the index and maintain order
     combined_df = combined_df.pivot_table(
@@ -109,7 +115,7 @@ def generate_pdf(
     pdf_file_path = f"{output_filename}.pdf"
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
-    pdf.set_font("Helvetica", size=6)
+    pdf.set_font("Helvetica", size=5)
 
     df = df.map(str)
     # Get list of dataframe column headers
@@ -131,8 +137,8 @@ def generate_pdf(
         header_0 + header_1 + rows
     )  # Combine headers and rows in one list
 
-    cell_width = pdf.epw / len(df.columns)  # Calculate cell width
-    cell_height = 8  # Cell height
+    cell_width = pdf.epw / len(headers)  # Calculate cell width
+    cell_height = pdf.font_size_pt  # Cell height
     table_text = list()
     for i, row in enumerate(table_data):
         drug_class = row[0]  # Assuming the first column is Drug Class
