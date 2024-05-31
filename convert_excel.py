@@ -116,6 +116,8 @@ def generate_pdf(
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
     pdf.set_font("Helvetica", size=6)
+    pdf.set_draw_color(220,220,220)
+    pdf.set_line_width(0.1)
 
     df = df.map(str)
     # Get list of dataframe column headers
