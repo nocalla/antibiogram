@@ -275,8 +275,8 @@ def main(file: str) -> None:
     print(df.head())  # debug
 
     pdf_file_path = generate_pdf(file, df, COLOURS)
-    jpg_file_path = generate_image(file, pdf_file_path)
-    print(f"\nGenerated {pdf_file_path}, {jpg_file_path}")
+    img_file_path = generate_image(file, pdf_file_path)
+    print(f"\nGenerated {pdf_file_path}, {img_file_path}")
 
 
 if __name__ == "__main__":

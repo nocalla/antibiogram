@@ -1,13 +1,13 @@
 ## Open Antibiogram: A User-friendly Antibiotics Sensitivity Chart
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10842457.svg)](https://doi.org/10.5281/zenodo.10842457)
 
-A simple antibiotic sensitivity chart. This version is aimed at senior medical student / early residents, but is hopefully helpful to a variety of people. Please contribute (especially if you find errors!). 
+A simple antibiotic sensitivity chart. This version is aimed at senior medical student / early residents, but is hopefully helpful to a variety of people. Please contribute (especially if you find errors!).
 
 Featured in the 2019 edition of [TrueLearn's](http://truelearn.com) general surgery question bank.
 
-Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics_coverage_diagram.jpg) for use in relevant [articles](https://en.wikipedia.org/wiki/Broad-spectrum_antibiotic). 
+Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics_coverage_diagram.jpg) for use in relevant [articles](https://en.wikipedia.org/wiki/Broad-spectrum_antibiotic).
 
-![antibiotic sensitivity chart](/antibiogram.jpg)
+![antibiotic sensitivity chart](/antibiogram.png)
 
 ## Sources/Inspiration:
 - [Sanford Guide to Antimicrobial Therapy Mobile](http://sanfordguide.com/)
