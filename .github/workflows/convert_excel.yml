@@ -1,0 +1,51 @@
+name: Convert Excel to PDF and JPG
+
+on:
+  pull_request:
+    paths:
+      - "**/*.xlsx"
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas fpdf2 matplotlib openpyxl
+          sudo apt-get install -y poppler-utils
+
+      - name: Convert Excel to PDF and image
+        run: |
+          python convert_excel.py
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
+      - name: Pull latest changes
+        run: |
+          git pull origin ${{ github.head_ref }}
+
+      - name: Commit changes
+        run: |
+          git add antibiogram.pdf antibiogram.png
+          git commit -m "Auto-add PDF and image versions of antibiogram" || echo "No changes to commit"
+
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push origin HEAD:${{ github.head_ref }}
