@@ -75,7 +75,6 @@ def map_drugs_bugs(
     rtype: pd.DataFrame
     """
     bug_names = bug_df["Name"].to_list()
-    print(bug_names)
     # Set the index for bug_df
     bug_df.set_index(["Group", "Name"], inplace=True)
 
@@ -87,8 +86,6 @@ def map_drugs_bugs(
     # TODO fix the sorting issue introduced by this merge?
     # It does sort the drugs in a logical way though so maybe it's okay.
     combined_df = pd.merge(stacked_bug_df, drug_df, on="Drug Name")
-
-    print(combined_df["Name"].to_list())
 
     # Pivot the combined_df so that Drug Name becomes the index and maintain order
     combined_df = combined_df.pivot_table(
