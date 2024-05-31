@@ -226,31 +226,40 @@ def get_spans(items: list[str]) -> dict[str, int]:
     return counts
 
 
-def generate_jpg(output_filename: str, pdf_file_path: str) -> str:
+def generate_image(
+    output_filename: str, pdf_file_path: str, resolution: int = 300
+) -> str:
     """
-    Creates a single page JPG based on the first page of an existing PDF file.
+    Creates a single page PNG based on the first page of an existing PDF file.
     NB: requires the installation of poppler-utils to work
 
-    :param output_filename: Name of the output JPG file (without extension)
+    :param output_filename: Name of the output PNG file (without extension)
     :type output_filename: str
-    :param pdf_file_path: Path to the PDF file being converted to JPG
+    :param pdf_file_path: Path to the PDF file being converted to PNG
     :type pdf_file_path: str
-    :return: Path to the JPG output file
+    :param resolution: Resolution in DPI for the generated image
+    :type resolution: int, optional
+    :return: Path to the PNG output file
     :rtype: str
     """
-    jpg_file_path = f"{output_filename}.jpg"
+    ext = "png"
+    img_filepath = f"{output_filename}.{ext}"
     command = [
         "pdftoppm",
-        "-jpeg",
+        f"-{ext}",
         "-singlefile",
+        "-rx",
+        str(resolution),
+        "-ry",
+        str(resolution),
         pdf_file_path,
         output_filename,
     ]
     try:
         subprocess.run(command, stderr=subprocess.DEVNULL, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"\ngenerate_jpg function error: {e}")
-    return jpg_file_path
+        print(f"\ngenerate_image function error: {e}")
+    return img_filepath
 
 
 def main(file: str) -> None:
@@ -269,7 +278,7 @@ def main(file: str) -> None:
     print(df.head())  # debug
 
     pdf_file_path = generate_pdf(file, df, COLOURS)
-    jpg_file_path = generate_jpg(file, pdf_file_path)
+    jpg_file_path = generate_image(file, pdf_file_path)
     print(f"\nGenerated {pdf_file_path}, {jpg_file_path}")
 
 
