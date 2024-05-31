@@ -28,6 +28,10 @@ COLOURS = {
     "Gram negative cocci": (144, 86, 145),
     "Anaerobes": (128, 96, 0),
     "Atypicals": (128, 128, 128),
+    "Drug Class": (180, 180, 180),
+    "Drug Name": (180, 180, 180),
+    "Drug Class ": (180, 180, 180),
+    "Drug Name ": (180, 180, 180),
 }
 
 
@@ -116,8 +120,9 @@ def generate_pdf(
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
     pdf.set_font("Helvetica", size=6)
-    pdf.set_draw_color(220,220,220)
+    pdf.set_draw_color(220, 220, 220)
     pdf.set_line_width(0.1)
+    background_colour = (255, 255, 255)
 
     df = df.map(str)
     # Get list of dataframe column headers
@@ -127,7 +132,7 @@ def generate_pdf(
 
     # map colours for header subclasses
     for col in headers:
-        colours[col[1]] = colours.get(col[0], (255, 255, 255))  # type: ignore
+        colours[col[1]] = colours.get(col[0], background_colour)  # type: ignore
 
     row_index = df.index.tolist()
     classes = [i[0] for i in row_index]
@@ -153,13 +158,21 @@ def generate_pdf(
     row_spans["Drug Name"] = 2
     row_spans["Drug Name "] = 2
 
-    blank_style = FontFace(color=(255, 255, 255), fill_color=(255, 255, 255))
+    heading_style = FontFace(
+        color=background_colour, emphasis="BOLD", fill_color=(220, 220, 220)
+    )
+    blank_style = FontFace(
+        color=background_colour, fill_color=background_colour
+    )
     table_text = list()
-    with pdf.table(first_row_as_headings=False) as table:
+    with pdf.table(
+        headings_style=heading_style,
+        num_heading_rows=2,
+    ) as table:
         for i, data_row in enumerate(table_data):
             drug_class = data_row[0]  # first column is Drug Class
             row = table.row()
-            row_colour = colours.get(drug_class, (255, 255, 255))
+            row_colour = colours.get(drug_class, background_colour)
             pdf.set_fill_color(*row_colour)
 
             for j, datum in enumerate(data_row):
