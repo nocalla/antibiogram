@@ -1,7 +1,7 @@
 import subprocess
 
 import pandas as pd
-from fpdf import FPDF
+from fpdf import FPDF, FontFace
 
 COLOURS = {
     "Penicillin": (224, 224, 224),
@@ -115,57 +115,100 @@ def generate_pdf(
     pdf_file_path = f"{output_filename}.pdf"
     pdf = FPDF(orientation="landscape")
     pdf.add_page()
-    pdf.set_font("Helvetica", size=5)
+    pdf.set_font("Helvetica", size=6)
 
     df = df.map(str)
     # Get list of dataframe column headers
-    headers = [
-        ("Drug Class", "Drug Class"),
-        ("Drug Name", "Drug Name"),
-    ] + list(df)
-    header_0 = [[h[0] for h in headers]]  # type: ignore
-    header_1 = [[h[1] for h in headers]]  # type: ignore
+    headers = list(df)
+    header_0 = [["Drug Class", "Drug Name"] + [h[0] for h in headers] + ["Drug Name "]]  # type: ignore
+    header_1 = [["Drug Class", "Drug Name"] + [h[1] for h in headers] + ["Drug Name "]]  # type: ignore
 
     # map colours for header subclasses
     for col in headers:
-        colours[str(col[1])] = colours.get(col[0], (255, 255, 255))
+        colours[col[1]] = colours.get(col[0], (255, 255, 255))  # type: ignore
 
     row_index = df.index.tolist()
-    rows = df.values.tolist()  # Get list of dataframe rows
-    rows = [[index[0], index[1], *row] for index, row in zip(row_index, rows)]
-    table_data = (
-        header_0 + header_1 + rows
-    )  # Combine headers and rows in one list
+    classes = [i[0] for i in row_index]
+    drugs = [i[1] for i in row_index]
+    shown_text = (
+        header_0[0] + header_1[0] + classes + drugs + [d + " " for d in drugs]
+    )
 
-    cell_width = pdf.epw / len(headers)  # Calculate cell width
-    cell_height = pdf.font_size_pt  # Cell height
+    # Get list of dataframe rows
+    rows = df.values.tolist()
+    rows = [
+        [index[0], index[1], *row, index[1] + " "]
+        for index, row in zip(row_index, rows)
+    ]
+
+    # Combine headers and rows in one list
+    table_data = header_0 + header_1 + rows
+
+    # get merged column widths and row heights
+    col_spans = get_spans(header_0[0])
+    row_spans = get_spans(classes)
+    row_spans["Drug Class"] = 2
+    row_spans["Drug Name"] = 2
+    row_spans["Drug Name "] = 2
+
+    blank_style = FontFace(color=(255, 255, 255), fill_color=(255, 255, 255))
     table_text = list()
-    for i, row in enumerate(table_data):
-        drug_class = row[0]  # Assuming the first column is Drug Class
-        row_colour = colours.get(drug_class, (255, 255, 255))
-        pdf.set_fill_color(*row_colour)
+    with pdf.table(first_row_as_headings=False) as table:
+        for i, data_row in enumerate(table_data):
+            drug_class = data_row[0]  # first column is Drug Class
+            row = table.row()
+            row_colour = colours.get(drug_class, (255, 255, 255))
+            pdf.set_fill_color(*row_colour)
 
-        for j, cell in enumerate(row):
-            if i < 2:
-                bacteria_class = cell
-                pdf.set_fill_color(*colours.get(bacteria_class, row_colour))
-            if cell == "nan":
-                colour_fill = False
-            else:
-                colour_fill = True
-            if (i >= 2) and (j >= 2):
-                cell = ""
-            if cell in table_text:
-                cell = ""
-            pdf.cell(
-                cell_width, cell_height, text=cell, border=1, fill=colour_fill
-            )
-            table_text += [cell]
-        pdf.ln(cell_height)
+            for j, datum in enumerate(data_row):
+                col_span = col_spans.get(datum, 1)
+                row_span = row_spans.get(datum, 1)
+                if i < 2:
+                    bacteria_class = datum
+                    pdf.set_fill_color(
+                        *colours.get(bacteria_class, row_colour)
+                    )
+                if datum == "nan":
+                    style = blank_style
+                else:
+                    style = None
+                if datum not in shown_text:
+                    datum = ""
+                if datum not in table_text:
+                    row.cell(
+                        text=datum,
+                        style=style,
+                        colspan=col_span,
+                        rowspan=row_span,
+                    )
+                    if datum != "":
+                        table_text.append(datum)
 
     pdf.output(pdf_file_path)
 
     return pdf_file_path
+
+
+def get_spans(items: list[str]) -> dict[str, int]:
+    """
+    For a given list of strings, return a dict mapping each unique string to the count of contiguous identical strings. Only correctly works if strings are grouped in blocks of unique items.
+
+    :param items: list of items to process
+    :type items: list[str]
+    :return: dict mapping strings to counts
+    :rtype: dict[str, int]
+    """
+    counts = dict()
+    last_item = ""
+    count = 1
+    for item in items:
+        if item == last_item:
+            count += 1
+        else:
+            count = 1
+        counts[item] = count
+        last_item = item
+    return counts
 
 
 def generate_jpg(output_filename: str, pdf_file_path: str) -> str:
