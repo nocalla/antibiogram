@@ -167,7 +167,7 @@ def generate_pdf(
     table_text = list()
     with pdf.table(
         headings_style=heading_style,
-        num_heading_rows=2,
+        num_heading_rows=2,  # type: ignore
     ) as table:
         for i, data_row in enumerate(table_data):
             drug_class = data_row[0]  # first column is Drug Class
