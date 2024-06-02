@@ -21,6 +21,8 @@ COLOURS = {
     "Lincosamide": (255, 255, 204),
     "Tetracyclines": (255, 204, 204),
     "Glycopeptides": (204, 204, 255),
+    "Lipopeptides": (204, 204, 255),
+    "Oxazolidinones": (204, 204, 255),
     "Antimetabolite": (153, 255, 153),
     "Nitroimidazoles": (255, 255, 153),
     "Gram positive cocci": (68, 114, 196),
@@ -155,6 +157,15 @@ def generate_pdf(
     row_spans["Drug Name"] = 2
     row_spans["Drug Name "] = 2
 
+    # generate column width list
+    width_options = [8, 12, 6]
+    col_widths = [
+        *width_options[0:2],
+        *[width_options[2]] * (len(header_0[0]) - 3),
+        width_options[1],
+    ]
+    print(col_widths)
+
     heading_style = FontFace(
         color=background_colour, emphasis="BOLD", fill_color=(220, 220, 220)
     )
@@ -163,13 +174,14 @@ def generate_pdf(
     )
     table_text = list()
     with pdf.table(
+        col_widths=col_widths,
         headings_style=heading_style,
         num_heading_rows=2,  # type: ignore
     ) as table:
         for i, data_row in enumerate(table_data):
             drug_class = data_row[0]  # first column is Drug Class
             row = table.row()
-            row_colour = colours.get(drug_class, background_colour)
+            row_colour = colours.get(drug_class, (180, 180, 180))
             pdf.set_fill_color(*row_colour)
 
             for j, datum in enumerate(data_row):
@@ -254,7 +266,7 @@ def generate_image(
     ]
     try:
         subprocess.run(command, stderr=subprocess.DEVNULL, check=True)
-    except subprocess.CalledProcessError as e:
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"\ngenerate_image function error: {e}")
     return img_filepath
 
