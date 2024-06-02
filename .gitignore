@@ -27,3 +27,4 @@
 *.afphoto
 .vscode/*
 .venv
+.gitignore
