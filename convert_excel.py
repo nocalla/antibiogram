@@ -157,6 +157,15 @@ def generate_pdf(
     row_spans["Drug Name"] = 2
     row_spans["Drug Name "] = 2
 
+    # generate column width list
+    width_options = [8, 12, 6]
+    col_widths = [
+        *width_options[0:2],
+        *[width_options[2]] * (len(header_0[0]) - 3),
+        width_options[1],
+    ]
+    print(col_widths)
+
     heading_style = FontFace(
         color=background_colour, emphasis="BOLD", fill_color=(220, 220, 220)
     )
@@ -165,6 +174,7 @@ def generate_pdf(
     )
     table_text = list()
     with pdf.table(
+        col_widths=col_widths,
         headings_style=heading_style,
         num_heading_rows=2,  # type: ignore
     ) as table:
