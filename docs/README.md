@@ -7,7 +7,8 @@ Featured in the 2019 edition of [TrueLearn's](http://truelearn.com) general surg
 
 Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics_coverage_diagram.jpg) for use in relevant [articles](https://en.wikipedia.org/wiki/Broad-spectrum_antibiotic).
 
-![antibiotic sensitivity chart](/docs/assets/antibiogram.png)
+![antibiotic sensitivity chart](./assets/antibiogram.png)
+PDF Version [here](./assets/antibiogram.pdf).
 
 ## Sources/Inspiration:
 - [Sanford Guide to Antimicrobial Therapy Mobile](http://sanfordguide.com/)
