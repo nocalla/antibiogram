@@ -292,5 +292,5 @@ def main(file: str) -> None:
 
 
 if __name__ == "__main__":
-    file = "antibiogram"
+    file = "docs/assets/antibiogram"
     main(file)

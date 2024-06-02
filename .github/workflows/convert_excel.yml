@@ -28,7 +28,7 @@ jobs:
 
       - name: Convert Excel to PDF and image
         run: |
-          python convert_excel.py
+          python code/convert_excel.py
 
       - name: Configure Git
         run: |
