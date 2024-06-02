@@ -10,6 +10,9 @@ Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics
 ![antibiotic sensitivity chart](./assets/antibiogram.png)
 PDF Version [here](./assets/antibiogram.pdf).
 
+### Full-Screen Image
+[View Full-Screen Image](./full_screen_image.html)
+
 ## Sources/Inspiration:
 - [Sanford Guide to Antimicrobial Therapy Mobile](http://sanfordguide.com/)
 - [James McCormack's Antibiotic Sensitivity Chart](http://therapeuticseducation.org/sites/therapeuticseducation.org/files/Antibiotic_Sensitivity_December_2015.pdf)
