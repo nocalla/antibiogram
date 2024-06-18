@@ -236,7 +236,7 @@ def get_spans(items: list[str]) -> dict[str, int]:
 
 
 def generate_image(
-    output_filename: str, pdf_file_path: str, resolution: int = 300
+    output_filename: str, pdf_file_path: str, resolution: int = 400
 ) -> str:
     """
     Creates a single page PNG based on the first page of an existing PDF file.

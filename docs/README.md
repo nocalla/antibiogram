@@ -12,7 +12,7 @@ Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics
 ### Full-Screen Image
 [View Full-Screen Image](./full_screen_image.html)
 ### PDF Version
-[View PDF](./assets/antibiogram.pdf).
+[View PDF](./assets/antibiogram.pdf)
 
 
 ## Sources/Inspiration:
