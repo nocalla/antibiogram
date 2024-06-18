@@ -1,11 +1,6 @@
 ## Open Antibiogram: A User-friendly Antibiotics Sensitivity Chart
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10842457.svg)](https://doi.org/10.5281/zenodo.10842457)
 
 A simple antibiotic sensitivity chart. This version is aimed at senior medical student / early residents, but is hopefully helpful to a variety of people. Please contribute (especially if you find errors!).
-
-Featured in the 2019 edition of [TrueLearn's](http://truelearn.com) general surgery question bank.
-
-Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics_coverage_diagram.jpg) for use in relevant [articles](https://en.wikipedia.org/wiki/Broad-spectrum_antibiotic).
 
 [![antibiotic sensitivity chart](./assets/antibiogram.png)](./full_screen_image.html)
 
@@ -16,6 +11,7 @@ Also [uploaded to wikipedia](https://commons.wikimedia.org/wiki/File:Antibiotics
 
 
 ## Sources/Inspiration:
+- Forked from Alex Goodell's [Open Antibiogram](https://github.com/alexgoodell/antibiogram)
 - [Sanford Guide to Antimicrobial Therapy Mobile](http://sanfordguide.com/)
 - [James McCormack's Antibiotic Sensitivity Chart](http://therapeuticseducation.org/sites/therapeuticseducation.org/files/Antibiotic_Sensitivity_December_2015.pdf)
 - [Wellington ICU Antibiotic Summary](http://wellingtonicu.com/Drug/PDF/Wellington%20ICU%20Antibiotic%20Summary.pdf)
