@@ -105,7 +105,7 @@ class PDF(FPDF):
         # Position cursor at 1.5 cm from bottom:
         self.set_y(-15)
         # Setting font: helvetica italic 8
-        self.set_font("helvetica", "I", 8)
+        self.set_font("helvetica", "I", 6)
         # Printing page number:
         self.cell(
             0,
