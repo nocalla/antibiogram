@@ -8,8 +8,6 @@ A simple antibiotic sensitivity chart. This version is aimed at senior medical s
 [View Full-Screen Image](./full_screen_image.html)
 ### PDF Version
 [View PDF](./assets/antibiogram.pdf)
-
-
 ## Sources/Inspiration:
 - Forked from Alex Goodell's [Open Antibiogram](https://github.com/alexgoodell/antibiogram)
 - [Sanford Guide to Antimicrobial Therapy Mobile](http://sanfordguide.com/)

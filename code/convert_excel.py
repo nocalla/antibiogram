@@ -100,6 +100,21 @@ def map_drugs_bugs(
     return combined_df
 
 
+class PDF(FPDF):
+    def footer(self) -> None:
+        # Position cursor at 1.5 cm from bottom:
+        self.set_y(-15)
+        # Setting font: helvetica italic 8
+        self.set_font("helvetica", "I", 8)
+        # Printing page number:
+        self.cell(
+            0,
+            10,
+            f"Source: https://nocalla.github.io/antibiogram/",
+            align="C",
+        )
+
+
 def generate_pdf(
     output_filename: str, df: pd.DataFrame, colours: dict[str, tuple]
 ) -> str:
@@ -116,7 +131,7 @@ def generate_pdf(
     :rtype: str
     """
     pdf_file_path = f"{output_filename}.pdf"
-    pdf = FPDF(orientation="landscape")
+    pdf = PDF(orientation="landscape")
     pdf.add_page()
     pdf.set_font("Helvetica", size=6)
     pdf.set_draw_color(220, 220, 220)
@@ -207,7 +222,6 @@ def generate_pdf(
                     )
                     if datum != "":
                         table_text.append(datum)
-
     pdf.output(pdf_file_path)
 
     return pdf_file_path
