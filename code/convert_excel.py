@@ -37,9 +37,12 @@ COLOURS = {
 }
 
 
-def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
+def read_dataframe(
+    file_path: str, sheet_name: str, include_col="Include", include_val="Y"
+) -> pd.DataFrame:
     """
-    Read a named worksheet in an Excel file into a Pandas dataframe.
+    Read a named worksheet in an Excel file into a Pandas dataframe,
+    excluding certain rows as specified.
 
     :param file_path: Path to Excel file
     :type file_path: str
@@ -50,6 +53,8 @@ def read_dataframe(file_path: str, sheet_name: str) -> pd.DataFrame:
     """
     # Read the named sheet with pandas
     df = pd.read_excel(file_path, sheet_name=sheet_name)
+    # Only include rows where the include_col value is include_val
+    df = df[df[include_col].str.capitalize() == include_val]
     return df
 
 
