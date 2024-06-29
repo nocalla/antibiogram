@@ -81,7 +81,6 @@ def map_drugs_bugs(
                   merged drug and bacteria information.
     rtype: pd.DataFrame
     """
-    bug_names = bug_df["Name"].to_list()
     # Set the index for bug_df
     bug_df.set_index(["Group", "Name"], inplace=True)
 
@@ -290,6 +289,29 @@ def generate_image(
     return img_filepath
 
 
+def get_colours(dfs: list[pd.DataFrame]) -> dict[str, tuple]:
+    """
+    Create a dictionary mapping the values in the first column of each
+    provided dataframe to the value in the "Colour" column.
+
+    :param dfs: List of Pandas dataframes to act on.
+    :type dfs: list[pd.DataFrame]
+    :return: Dictionary of strings mapped to RGB tuples
+    :rtype: dict[str, tuple]
+    """
+    colour_headers = ["Label", "Colour"]
+    colour_dfs = list()
+
+    for df in dfs:
+        colour_index = list(df.columns).index("Colour")
+        df = df.iloc[:, [0, colour_index]]
+        df.columns = colour_headers
+        colour_dfs.append(df)
+    colour_df = pd.concat(colour_dfs)
+    # return colour_df.to_dict(orient="records") # TODO fix orient type
+    return COLOURS  # debug placeholder
+
+
 def main(file: str) -> None:
     """
     Generate a PDF and JPG version of the data in an Excel worksheet.
@@ -302,10 +324,14 @@ def main(file: str) -> None:
     file_path = f"{file}.xlsx"
     drug_df = read_dataframe(file_path, "Drug Information")
     bug_df = read_dataframe(file_path, "Bacteria Information")
-    df = map_drugs_bugs(drug_df, bug_df)
+    df = map_drugs_bugs(
+        drug_df.drop("Colour", axis="columns"),
+        bug_df.drop("Colour", axis="columns"),
+    )
     print(df.head())  # debug
-
-    pdf_file_path = generate_pdf(file, df, COLOURS)
+    colours = get_colours([drug_df, bug_df])
+    print(colours)  # debug
+    pdf_file_path = generate_pdf(file, df, colours)
     img_file_path = generate_image(file, pdf_file_path)
     print(f"\nGenerated {pdf_file_path}, {img_file_path}")
 
