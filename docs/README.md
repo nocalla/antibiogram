@@ -3,7 +3,6 @@
 A simple antibiotic sensitivity chart. This version is aimed at senior medical student / early residents, but is hopefully helpful to a variety of people. Please contribute (especially if you find errors!).
 
 [![antibiotic sensitivity chart](./assets/antibiogram.png)](./full_screen_image.html)
-
 ### Full-Screen Image
 [View Full-Screen Image](./full_screen_image.html)
 ### PDF Version
