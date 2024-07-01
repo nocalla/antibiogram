@@ -1,40 +1,8 @@
+import ast
 import subprocess
 
 import pandas as pd
 from fpdf import FPDF, FontFace
-
-COLOURS = {
-    "Penicillin": (224, 224, 224),
-    "Anti-staphylococcal penicillins": (224, 224, 224),
-    "Aminopenicillins": (224, 224, 224),
-    "Aminopenicillins with beta-lactamase inhibitors": (204, 229, 255),
-    "1st-gen cephalosporin": (169, 169, 169),
-    "2nd-gen cephalosporin": (169, 169, 169),
-    "3rd-gen cephalosporin": (169, 169, 169),
-    "4th-gen cephalosporin": (169, 169, 169),
-    "5th-gen cephalosporin": (169, 169, 169),
-    "Carbapenems": (255, 235, 204),
-    "Monobactams": (255, 255, 153),
-    "Quinolones": (224, 255, 224),
-    "Aminoglycosides": (255, 204, 153),
-    "Macrolides": (153, 255, 255),
-    "Lincosamide": (255, 255, 204),
-    "Tetracyclines": (255, 204, 204),
-    "Glycopeptides": (204, 204, 255),
-    "Lipopeptides": (204, 204, 255),
-    "Oxazolidinones": (204, 204, 255),
-    "Antimetabolite": (153, 255, 153),
-    "Nitroimidazoles": (255, 255, 153),
-    "Gram positive cocci": (68, 114, 196),
-    "Gram negative bacilli": (192, 0, 0),
-    "Gram negative cocci": (144, 86, 145),
-    "Anaerobes": (128, 96, 0),
-    "Atypicals": (128, 128, 128),
-    "Drug Class": (180, 180, 180),
-    "Drug Name": (180, 180, 180),
-    "Drug Class ": (180, 180, 180),
-    "Drug Name ": (180, 180, 180),
-}
 
 
 def read_dataframe(
@@ -183,7 +151,6 @@ def generate_pdf(
         *[width_options[2]] * (len(header_0[0]) - 3),
         width_options[1],
     ]
-    print(col_widths)
 
     heading_style = FontFace(
         color=background_colour, emphasis="BOLD", fill_color=(220, 220, 220)
@@ -285,11 +252,11 @@ def generate_image(
     try:
         subprocess.run(command, stderr=subprocess.DEVNULL, check=True)
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
-        print(f"\ngenerate_image function error: {e}")
+        print(f"\tgenerate_image function error: {e}")
     return img_filepath
 
 
-def get_colours(dfs: list[pd.DataFrame]) -> dict[str, tuple]:
+def get_colours(dfs: list[pd.DataFrame]) -> dict[str, tuple[int]]:
     """
     Create a dictionary mapping the values in the first column of each
     provided dataframe to the value in the "Colour" column.
@@ -307,9 +274,16 @@ def get_colours(dfs: list[pd.DataFrame]) -> dict[str, tuple]:
         df = df.iloc[:, [0, colour_index]]
         df.columns = colour_headers
         colour_dfs.append(df)
-    colour_df = pd.concat(colour_dfs)
-    # return colour_df.to_dict(orient="records") # TODO fix orient type
-    return COLOURS  # debug placeholder
+
+    colour_df = pd.concat(colour_dfs).drop_duplicates(subset=colour_headers[0])
+    colour_df.dropna(inplace=True)
+    colour_df.set_index(keys=colour_headers[0], inplace=True)
+    colour_df[colour_headers[1]] = colour_df[colour_headers[1]].apply(
+        lambda x: tuple(map(int, ast.literal_eval(x)))
+    )
+    colour_dict = colour_df.to_dict(orient="dict")[colour_headers[1]]
+
+    return colour_dict
 
 
 def main(file: str) -> None:
@@ -322,18 +296,22 @@ def main(file: str) -> None:
     :type sheet_name: str
     """
     file_path = f"{file}.xlsx"
+    print(f"Reading drug information from {file_path}")
     drug_df = read_dataframe(file_path, "Drug Information")
+    print(f"Reading bacteria information from {file_path}")
     bug_df = read_dataframe(file_path, "Bacteria Information")
+    print("Mapping drugs to bacterial groups")
     df = map_drugs_bugs(
         drug_df.drop("Colour", axis="columns"),
         bug_df.drop("Colour", axis="columns"),
     )
-    print(df.head())  # debug
+    print(f"Getting colours from {file_path}")
     colours = get_colours([drug_df, bug_df])
-    print(colours)  # debug
+    print("Generating PDF file")
     pdf_file_path = generate_pdf(file, df, colours)
+    print("Generating image file")
     img_file_path = generate_image(file, pdf_file_path)
-    print(f"\nGenerated {pdf_file_path}, {img_file_path}")
+    print(f"Done!\n\tGenerated {pdf_file_path}, {img_file_path}")
 
 
 if __name__ == "__main__":
