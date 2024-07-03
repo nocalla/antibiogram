@@ -295,6 +295,7 @@ def main(file: str) -> None:
     :param sheet_name: Name of the Excel worksheet to read
     :type sheet_name: str
     """
+    # TODO - use a progress bar instead of successive print messages
     file_path = f"{file}.xlsx"
     print(f"Reading drug information from {file_path}")
     drug_df = read_dataframe(file_path, "Drug Information")
